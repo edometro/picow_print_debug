@@ -1,10 +1,10 @@
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
-#include <LEAmDNS.h>
+// #include <LEAmDNS.h>
 
 #ifndef STASSID
-#define STASSID "PicoW"
+#define STASSID "ESP3253"
 #define STAPSK "0123456789"
 #endif
 
@@ -15,16 +15,16 @@ const IPAddress ip(192, 168, 40, 1);
 const IPAddress subnet(255, 255, 255, 0);
 
 WebServer server(80);
-const int led = LED_BUILTIN;
+// const int led = LED_BUILTIN;
 
 // 並列処理で共有するログバッファ
 String usbBuffer;
 String uartBuffer;
 
 void handleRoot() {
-  digitalWrite(led, HIGH);
+  // digitalWrite(led, HIGH);
   server.send(200, "text/plain", "hello from pico w!\r\n");
-  digitalWrite(led, LOW);
+  // digitalWrite(led, LOW);
 }
 
 void handleUSB() {
@@ -71,8 +71,8 @@ void handleNotFound() {
 }
 
 void setup() {
-  pinMode(led, OUTPUT);
-  digitalWrite(led, LOW);
+  // pinMode(led, OUTPUT);
+  // digitalWrite(led, LOW);
   Serial.begin(115200);
 
   WiFi.mode(WIFI_AP);
@@ -85,9 +85,9 @@ void setup() {
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
-  if (MDNS.begin("picow")) {
-    Serial.println("MDNS responder started (http://picow.local/)");
-  }
+  // if (MDNS.begin("picow")) {
+  //   Serial.println("MDNS responder started (http://picow.local/)");
+  // }
 
   server.on("/", handleRoot);
   server.on("/usb", handleUSB);
@@ -101,7 +101,7 @@ void setup() {
 
 void loop() {
   server.handleClient();
-  MDNS.update();
+  // MDNS.update();
 }
 
 void setup1() {
