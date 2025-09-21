@@ -4,7 +4,7 @@
 // #include <LEAmDNS.h>
 
 #ifndef STASSID
-#define STASSID "ESP3253"
+#define STASSID "ESP32C6"
 #define STAPSK "0123456789"
 #endif
 
@@ -23,26 +23,20 @@ String uartBuffer;
 
 void handleRoot() {
   // digitalWrite(led, HIGH);
-  server.send(200, "text/plain", "hello from pico w!\r\n");
+  server.send(200, "text/plain", "hello from esp32 c3\r\n");
   // digitalWrite(led, LOW);
 }
 
 void handleUSB() {
-  noInterrupts();
   String data = usbBuffer;
+  server.send(200, "text/plain", data.c_str());
   usbBuffer = "";
-  interrupts();
-
-  server.send(200, "text/plain", data);
 }
 
 void handleUART() {
-  noInterrupts();
   String data = uartBuffer;
+  server.send(200, "text/plain", data.c_str());
   uartBuffer = "";
-  interrupts();
-
-  server.send(200, "text/plain", data);
 }
 
 void handleOutput() {
@@ -54,7 +48,7 @@ void handleOutput() {
 
   if (msg.length() > 0) {
     Serial.print(msg);  // USBへ送信
-    Serial1.print(msg); // UARTへ送信
+    // Serial1.print(msg); // UARTへ送信
     server.send(200, "text/plain", "Sent: " + msg);
   } else {
     server.send(200, "text/plain", "No Massage");
@@ -74,10 +68,18 @@ void setup() {
   // pinMode(led, OUTPUT);
   // digitalWrite(led, LOW);
   Serial.begin(115200);
+    // USB: Serial は既に使ってるので Serial1 を UART 用に
+  // Serial1.begin(115200);
+  // 使用するピンに合わせてコメントを外して設定してください
+  // 例: Serial1.setTX(GP12);
+  //     Serial1.setRX(GP13);
+  usbBuffer.reserve(256);
+  uartBuffer.reserve(256);
 
-  WiFi.mode(WIFI_AP);
+  // WiFi.mode(WIFI_AP);
+  WiFi.softAP(ssid, password);
   WiFi.softAPConfig(ip, ip, subnet);
-  WiFi.begin(ssid, password);
+  // WiFi.begin(ssid, password);
 
   Serial.println("");
   Serial.print("AP SSID: ");
@@ -97,25 +99,13 @@ void setup() {
 
   server.begin();
   Serial.println("HTTP server started");
+
 }
 
 void loop() {
   server.handleClient();
   // MDNS.update();
-}
-
-void setup1() {
-  // USB: Serial は既に使ってるので Serial1 を UART 用に
-  Serial1.begin(115200);
-  // 使用するピンに合わせてコメントを外して設定してください
-  // 例: Serial1.setTX(GP12);
-  //     Serial1.setRX(GP13);
-  usbBuffer.reserve(256);
-  uartBuffer.reserve(256);
-}
-
-void loop1() {
-  // バッファが大きくなりすぎたらクリア
+      // バッファが大きくなりすぎたらクリア
   if (usbBuffer.length() > 250) {
     usbBuffer = "";
   }
@@ -126,18 +116,12 @@ void loop1() {
   // USB入力
   while (Serial.available()) {
     char c = Serial.read();
-    noInterrupts();
     usbBuffer += c;
-    interrupts();
   }
 
-  // UART入力
-  while (Serial1.available()) {
-    char c = Serial1.read();
-    noInterrupts();
-    uartBuffer += c;
-    interrupts();
-  }
-
-  delay(1); // CPUを少し休ませる
+  // // UART入力
+  // while (Serial1.available()) {
+  //   char c = Serial1.read();
+  //   uartBuffer += c;
+  // }
 }
