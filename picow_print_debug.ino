@@ -87,10 +87,14 @@ void setup() {
   // digitalWrite(led, LOW);
   Serial.begin(115200);
   // USB: Serial は既に使ってるので Serial1 を UART 用に
-  // Serial1.setTX(D6);
-  // Serial1.setRX(D7);
+  #ifdef PicoW
   Serial1.setTX(0);
   Serial1.setRX(1);
+  #endif
+  #ifdef esp32
+  Serial1.setTX(D6);
+  Serial1.setRX(D7);
+  #endif
   Serial1.begin(115200);
   usbBuffer.reserve(256);
   uartBuffer.reserve(256);
