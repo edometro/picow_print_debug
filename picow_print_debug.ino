@@ -1,10 +1,23 @@
+// #include <ESPAsyncWebServer.h> // これいる？
+
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
 // #include <LEAmDNS.h>
 
+#define esp32
+// #define PicoW
+
+
 #ifndef STASSID
-#define STASSID "ESP32C6"
+
+#ifdef PicoW
+#define STASSID "PicoW"
+#endif
+#ifdef esp32
+#define STASSID "XiaoSeedC3"
+#endif
+
 #define STAPSK "0123456789"
 #endif
 
@@ -23,7 +36,12 @@ String uartBuffer;
 
 void handleRoot() {
   // digitalWrite(led, HIGH);
+  #ifdef PicoW
+  server.send(200, "text/plain", "hello from PicoW\r\n");
+  #endif
+  #ifdef esp32
   server.send(200, "text/plain", "hello from esp32 c3\r\n");
+  #endif
   // digitalWrite(led, LOW);
 }
 
@@ -48,7 +66,7 @@ void handleOutput() {
 
   if (msg.length() > 0) {
     Serial.print(msg);  // USBへ送信
-    // Serial1.print(msg); // UARTへ送信
+    Serial1.print(msg); // UARTへ送信
     server.send(200, "text/plain", "Sent: " + msg);
   } else {
     server.send(200, "text/plain", "No Massage");
@@ -68,17 +86,18 @@ void setup() {
   // pinMode(led, OUTPUT);
   // digitalWrite(led, LOW);
   Serial.begin(115200);
-    // USB: Serial は既に使ってるので Serial1 を UART 用に
-  // Serial1.begin(115200);
-  // 使用するピンに合わせてコメントを外して設定してください
-  // 例: Serial1.setTX(GP12);
-  //     Serial1.setRX(GP13);
+  // USB: Serial は既に使ってるので Serial1 を UART 用に
+  // Serial1.setTX(D6);
+  // Serial1.setRX(D7);
+  Serial1.setTX(0);
+  Serial1.setRX(1);
+  Serial1.begin(115200);
   usbBuffer.reserve(256);
   uartBuffer.reserve(256);
 
   // WiFi.mode(WIFI_AP);
-  WiFi.softAP(ssid, password);
   WiFi.softAPConfig(ip, ip, subnet);
+  WiFi.softAP(ssid, password);
   // WiFi.begin(ssid, password);
 
   Serial.println("");
@@ -119,9 +138,9 @@ void loop() {
     usbBuffer += c;
   }
 
-  // // UART入力
-  // while (Serial1.available()) {
-  //   char c = Serial1.read();
-  //   uartBuffer += c;
-  // }
+  // UART入力
+  while (Serial1.available()) {
+    char c = Serial1.read();
+    uartBuffer += c;
+  }
 }
