@@ -118,7 +118,7 @@ void setup() {
   Serial.print("AP SSID: ");
   Serial.println(ssid);
   Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
+  Serial.println(WiFi.softAPIP());
   Serial.println("HTTP server started");
 
 }
