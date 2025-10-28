@@ -93,7 +93,7 @@ void setup() {
   Serial1.begin(115200);
   #endif
   #ifdef esp32
-  Serial1.begin(D6, D7, 115200);
+  Serial1.begin(115200, SERIAL_8N1, D7, D6); // RX, TX
   #endif
   usbBuffer.reserve(256);
   uartBuffer.reserve(256);
