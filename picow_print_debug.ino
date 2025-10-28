@@ -15,7 +15,7 @@
 #define STASSID "PicoW"
 #endif
 #ifdef esp32
-#define STASSID "XiaoSeedC3"
+#define STASSID "SeedXiaoC3"
 #endif
 
 #define STAPSK "0123456789"
@@ -90,12 +90,11 @@ void setup() {
   #ifdef PicoW
   Serial1.setTX(0);
   Serial1.setRX(1);
+  Serial1.begin(115200);
   #endif
   #ifdef esp32
-  Serial1.setTX(D6);
-  Serial1.setRX(D7);
+  Serial1.begin(D6, D7, 115200);
   #endif
-  Serial1.begin(115200);
   usbBuffer.reserve(256);
   uartBuffer.reserve(256);
 
@@ -103,12 +102,6 @@ void setup() {
   WiFi.softAPConfig(ip, ip, subnet);
   WiFi.softAP(ssid, password);
   // WiFi.begin(ssid, password);
-
-  Serial.println("");
-  Serial.print("AP SSID: ");
-  Serial.println(ssid);
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
 
   // if (MDNS.begin("picow")) {
   //   Serial.println("MDNS responder started (http://picow.local/)");
@@ -121,6 +114,11 @@ void setup() {
   server.onNotFound(handleNotFound);
 
   server.begin();
+  Serial.println("");
+  Serial.print("AP SSID: ");
+  Serial.println(ssid);
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
   Serial.println("HTTP server started");
 
 }
