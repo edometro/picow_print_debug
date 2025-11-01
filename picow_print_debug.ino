@@ -5,8 +5,8 @@
 #include <WebServer.h>
 // #include <LEAmDNS.h>
 
-#define esp32
-// #define PicoW
+// #define esp32
+#define PicoW
 
 
 #ifndef STASSID
@@ -21,11 +21,15 @@
 #define STAPSK "0123456789"
 #endif
 
-const char* ssid = STASSID;
-const char* password = STAPSK;
+// 接続したいWi-FiのSSIDとパスワードを設定
+#define WIFI_SSID "giga-tmu-1gou" // 接続先のSSIDに変更
+#define WIFI_PASS "giga-1gou"   // 接続先のパスワードに変更
 
-const IPAddress ip(192, 168, 40, 1);
-const IPAddress subnet(255, 255, 255, 0);
+const char* ssid = WIFI_SSID;
+const char* password = WIFI_PASS;
+
+// const IPAddress ip(192, 168, 40, 1);
+// const IPAddress subnet(255, 255, 255, 0);
 
 WebServer server(80);
 // const int led = LED_BUILTIN;
@@ -98,10 +102,19 @@ void setup() {
   usbBuffer.reserve(256);
   uartBuffer.reserve(256);
 
-  // WiFi.mode(WIFI_AP);
-  WiFi.softAPConfig(ip, ip, subnet);
-  WiFi.softAP(ssid, password);
-  // WiFi.begin(ssid, password);
+  // --- ★ 変更箇所 (通常のWi-Fi接続) ★ ---
+  WiFi.mode(WIFI_STA); // STAモード（クライアントモード）に設定
+  WiFi.begin(ssid, password); // 接続開始
+
+  Serial.print("Connecting to WiFi...");
+  // 接続が完了するまで待機
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected!");
+  // ----------------------------------------
 
   // if (MDNS.begin("picow")) {
   //   Serial.println("MDNS responder started (http://picow.local/)");
@@ -110,15 +123,14 @@ void setup() {
   server.on("/", handleRoot);
   server.on("/usb", handleUSB);
   server.on("/uart", handleUART);
-  
+
   server.onNotFound(handleNotFound);
 
   server.begin();
-  Serial.println("");
-  Serial.print("AP SSID: ");
+  Serial.print("Connected to SSID: ");
   Serial.println(ssid);
   Serial.print("IP address: ");
-  Serial.println(WiFi.softAPIP());
+  Serial.println(WiFi.localIP()); // 割り当てられたIPアドレスを表示
   Serial.println("HTTP server started");
 
 }
