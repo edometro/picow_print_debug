@@ -34,6 +34,41 @@ WebServer server(80);
 String usbBuffer;
 String uartBuffer;
 
+// URL デコード用ヘルパー。"%20" や "+" を実際の文字に戻す。
+String urlDecode(const String& src) {
+  String out;
+  out.reserve(src.length());
+
+  auto fromHex = [](char c) -> int {
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+    return -1;
+  };
+
+  for (size_t i = 0; i < static_cast<size_t>(src.length()); ++i) {
+    char c = src.charAt(static_cast<unsigned int>(i));
+
+    if (c == '%' && i + 2 < static_cast<size_t>(src.length())) {
+      int hi = fromHex(src.charAt(static_cast<unsigned int>(i + 1)));
+      int lo = fromHex(src.charAt(static_cast<unsigned int>(i + 2)));
+      if (hi >= 0 && lo >= 0) {
+        out += static_cast<char>((hi << 4) | lo);
+        i += 2;
+        continue;
+      }
+    }
+
+    if (c == '+') {
+      out += ' ';
+    } else {
+      out += c;
+    }
+  }
+
+  return out;
+}
+
 void handleRoot() {
   // digitalWrite(led, HIGH);
   #ifdef PicoW
@@ -61,7 +96,7 @@ void handleOutput() {
   String path = server.uri(); // 例: "/output/aaa"
   String msg;
   if (path.startsWith("/output/")) {
-    msg = path.substring(8); // "/output/" の後ろを切り出す
+    msg = urlDecode(path.substring(8)); // "/output/" の後ろを切り出してデコード
   }
 
   if (msg.length() > 0) {
